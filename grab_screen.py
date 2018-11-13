@@ -5,10 +5,10 @@ import os
 import threading
 
 # Constants
-SCREEN_X_START = 0
-SCREEN_Y_START = 0
-SCREEN_X_END = 800
-SCREEN_Y_END = 600
+SCREEN_X_START = 2
+SCREEN_Y_START = 70
+SCREEN_X_END = 520
+SCREEN_Y_END = 520
 
 COUNTER = 1
 PATH = os.path.join(os.getcwd(), './screenshots')
