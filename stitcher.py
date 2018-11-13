@@ -1,4 +1,6 @@
+from scipy import stats
 import numpy as np
+
 import time
 import cv2
 import os
@@ -18,29 +20,37 @@ def affineStitch(imageLeft, imageRight):
     for m in matches:
         if m.distance < 5:
             goodMatches.append(m)
+
+    if len(goodMatches) < 3:
+    	return None
     
-    ptsA = np.float32([kpLeft[i.queryIdx].pt for i in goodMatches])
-    ptsB = np.float32([kpRight[i.trainIdx].pt for i in goodMatches])
+    ptsA = np.float32([kpLeft[m.queryIdx].pt for m in goodMatches])
+    ptsB = np.float32([kpRight[m.trainIdx].pt for m in goodMatches])
     
-    if len(ptsA)<3 or len(ptsB)<3: return None
-    M = cv2.getAffineTransform(ptsB[:3],ptsA[:3])
-    warpedImage = cv2.warpAffine(imageRight,M,(imageLeft.shape[1]+imageRight.shape[1],imageLeft.shape[0]))
+    distances = np.array([kpLeft[m.queryIdx].pt[0] - kpRight[m.trainIdx].pt[0] for m in goodMatches])
+    losses = np.array([np.sum(abs(distances - d)) for d in distances])
+#     print(np.median(distances), np.mean(distances), stats.mode(distances).mode[0])
+#     print(np.argmin(losses), distances[np.argmin(losses)])
+
+    requiredWidth = int(np.round(distances[np.argmin(losses)]))
+    warpedImage = np.zeros(np.array(imageLeft.shape) + (0, requiredWidth, 0), dtype='uint8')
+    print(warpedImage.shape, imageRight.shape)
+    warpedImage[:, -imageRight.shape[1]:, :] = imageRight
     warpedImage[:, 0:imageLeft.shape[1], :] = imageLeft
-    
-    homographyMatrix = np.eye(3)
-    homographyMatrix[0,2] = M[0,2]
-    homographyMatrix[1,2] = M[1,2]
-    
-    w2,h2 = imageRight.shape[:2]
-    imageRightTempDim = np.float32([ [0,0], [0,w2], [h2, w2], [h2,0] ]).reshape(-1,1,2)
-    imageRightDim = cv2.perspectiveTransform(imageRightTempDim, homographyMatrix)
-    rightEdge = int(np.min(imageRightDim[2:].T[0]))
-    return warpedImage[:, :rightEdge, :]
+    return warpedImage
 
 if __name__ == '__main__':
 
 	imageLeft = None
 	imageRight = None
+
+	# extension = 'png'
+	# imageFileLeft = 'imageLeft.{}'.format(extension)
+	# imageFileRight = 'imageRight.{}'.format(extension)
+
+	# imageLeft = cv2.imread(imageFileLeft)[:,:,::-1]
+	# imageRight = cv2.imread(imageFileRight)[:,:,::-1]
+
 
 	print('Starting in 3 seconds, get ready!')
 	for i in range(3):
@@ -48,24 +58,28 @@ if __name__ == '__main__':
 		time.sleep(1)
 
 	print('Press Q to quit!')
+	counter = 0
 	while True:
 		keys = get_keys()
 
 		if imageLeft is None:
-			imageLeft = get_screen()
+			imageLeft = get_screen()[:,:,::-1]
 			time.sleep(0.5)
 			continue
 
-		imageRight = get_screen()
+		imageRight = get_screen()[:,:,::-1]
 		stitchedImage = affineStitch(imageLeft, imageRight)
 
 		if stitchedImage is not None:
-			cv2.imwrite('imageLeft.png', imageLeft)
-			cv2.imwrite('imageRight.png', imageRight)
-			cv2.imwrite('stitchedImage.png', stitchedImage)
+			cv2.imwrite('imageLeft.png', imageLeft[:,:,::-1])
+			cv2.imwrite('imageRight.png', imageRight[:,:,::-1])
+			cv2.imwrite('stitchedImage.png', stitchedImage[:,:,::-1])
 			print('stitchedImage saved')
-			break
 
-		time.sleep(0.5)
+			imageLeft = stitchedImage
+			counter += 1
+			if counter is 2: break
+
+		time.sleep(0.25)
 		if 'Q' in keys:
 			break

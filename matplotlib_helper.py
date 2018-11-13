@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-def imshow(*images, cmap='viridis'):
+def imshow(*images, cmap='viridis', newFigure=False):
     """
     Shows image loaded by opencv after inverting the order of channels
     Can also be used to show single layer depth image
@@ -13,6 +13,8 @@ def imshow(*images, cmap='viridis'):
         None
         """
     plt.rcParams['image.cmap'] = cmap
+    if newFigure:
+        plt.figure()
 
     no_of_images = len(images)
 
