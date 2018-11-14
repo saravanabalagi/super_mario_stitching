@@ -57,6 +57,10 @@ if __name__ == '__main__':
 		print('{}'.format(3-i), end='\r')
 		time.sleep(1)
 
+	dataFolder = os.path.join(os.getcwd(), './data')
+	if not os.path.exists(dataFolder):
+		os.makedirs(dataFolder)
+
 	print('Press Q to quit!')
 	counter = 0
 	while True:
@@ -64,6 +68,7 @@ if __name__ == '__main__':
 
 		if imageLeft is None:
 			imageLeft = get_screen()[:,:,::-1]
+			cv2.imwrite('{}/image_{:03d}.png'.format(dataFolder, 0), imageLeft[:,:,::-1])
 			time.sleep(0.5)
 			continue
 
@@ -71,14 +76,13 @@ if __name__ == '__main__':
 		stitchedImage = affineStitch(imageLeft, imageRight)
 
 		if stitchedImage is not None:
-			cv2.imwrite('imageLeft.png', imageLeft[:,:,::-1])
-			cv2.imwrite('imageRight.png', imageRight[:,:,::-1])
-			cv2.imwrite('stitchedImage.png', stitchedImage[:,:,::-1])
+			cv2.imwrite('{}/image_{:03d}.png'.format(dataFolder, counter+1), imageRight[:,:,::-1])
+			cv2.imwrite('{}/stitched_{:03d}.png'.format(dataFolder, counter+1), stitchedImage[:,:,::-1])
 			print('stitchedImage saved')
 
 			imageLeft = stitchedImage
 			counter += 1
-			if counter is 2: break
+			if counter is 5: break
 
 		time.sleep(0.25)
 		if 'Q' in keys:
