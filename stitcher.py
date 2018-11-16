@@ -18,8 +18,16 @@ def affineStitch(imageLeft, imageRight):
     
     goodMatches = []
     for m in matches:
-        if m.distance < 5:
+    	# if the keypoints are not in the same height reject
+        if kpLeft[m.queryIdx].pt[1] != kpRight[m.trainIdx].pt[1]: continue
+
+        # if the keypoints are in the left part of the stitched image, reject
+        if kpLeft[m.queryIdx].pt[0] < (imageLeft.shape[1] - imageRight.shape[1]): continue
+
+        if m.distance < 10:
             goodMatches.append(m)
+
+    # print(len(matches), len(goodMatches))
 
     if len(goodMatches) < 3:
     	print('No Matches')
@@ -30,12 +38,11 @@ def affineStitch(imageLeft, imageRight):
     
     distances = np.array([kpLeft[m.queryIdx].pt[0] - kpRight[m.trainIdx].pt[0] for m in goodMatches])
     losses = np.array([np.sum(abs(distances - d)) for d in distances])
-#     print(np.median(distances), np.mean(distances), stats.mode(distances).mode[0])
-#     print(np.argmin(losses), distances[np.argmin(losses)])
+    # print(np.median(distances), np.mean(distances), stats.mode(distances).mode[0])
+    # print(np.argmin(losses), distances[np.argmin(losses)])
 
 	# find the translation that minimizes loss
     requiredWidth = int(np.round(distances[np.argmin(losses)]))
-    
 
     # subtract the extra width so we can print imageRight to the very right
     requiredWidth -= (imageLeft.shape[1] - imageRight.shape[1])
@@ -47,7 +54,7 @@ def affineStitch(imageLeft, imageRight):
     	stitchedImageShape = np.array(imageLeft.shape)
 
     warpedImage = np.zeros(stitchedImageShape, dtype='uint8')
-    # print(imageLeft.shape, imageRight.shape, warpedImage.shape)
+    # print(requiredWidth, imageLeft.shape, imageRight.shape, warpedImage.shape)
     warpedImage[:, -imageRight.shape[1]:, :] = imageRight
     warpedImage[:, 0:imageLeft.shape[1], :] = imageLeft
     return warpedImage
@@ -57,13 +64,14 @@ if __name__ == '__main__':
 	imageLeft = None
 	imageRight = None
 
+	# debug
 	# extension = 'png'
-	# imageFileLeft = 'imageLeft.{}'.format(extension)
-	# imageFileRight = 'imageRight.{}'.format(extension)
+	# dataFolder = 'data'
+	# imageFileLeft = '{}/stitched_001.{}'.format(dataFolder, extension)
+	# imageFileRight = '{}/image_002.{}'.format(dataFolder, extension)
 
 	# imageLeft = cv2.imread(imageFileLeft)[:,:,::-1]
 	# imageRight = cv2.imread(imageFileRight)[:,:,::-1]
-
 
 	print('Starting in 3 seconds, get ready!')
 	for i in range(3):
@@ -71,6 +79,7 @@ if __name__ == '__main__':
 		time.sleep(1)
 
 	dataFolder = os.path.join(os.getcwd(), './data')
+	# dataFolder = os.path.join(os.getcwd(), './debug')
 	if not os.path.exists(dataFolder):
 		os.makedirs(dataFolder)
 
@@ -95,6 +104,7 @@ if __name__ == '__main__':
 
 			imageLeft = stitchedImage
 			counter += 1
+			# break
 			# if counter is 5: break
 
 		time.sleep(0.25)
