@@ -22,6 +22,7 @@ def affineStitch(imageLeft, imageRight):
             goodMatches.append(m)
 
     if len(goodMatches) < 3:
+    	print('No Matches')
     	return None
     
     ptsA = np.float32([kpLeft[m.queryIdx].pt for m in goodMatches])
@@ -32,9 +33,21 @@ def affineStitch(imageLeft, imageRight):
 #     print(np.median(distances), np.mean(distances), stats.mode(distances).mode[0])
 #     print(np.argmin(losses), distances[np.argmin(losses)])
 
+	# find the translation that minimizes loss
     requiredWidth = int(np.round(distances[np.argmin(losses)]))
-    warpedImage = np.zeros(np.array(imageLeft.shape) + (0, requiredWidth, 0), dtype='uint8')
-    print(warpedImage.shape, imageRight.shape)
+    
+
+    # subtract the extra width so we can print imageRight to the very right
+    requiredWidth -= (imageLeft.shape[1] - imageRight.shape[1])
+    print('Translation', requiredWidth)
+
+    # get larger image if there is positive translation
+    stitchedImageShape = np.array(imageLeft.shape) + (0, requiredWidth, 0)
+    if requiredWidth < 0: 
+    	stitchedImageShape = np.array(imageLeft.shape)
+
+    warpedImage = np.zeros(stitchedImageShape, dtype='uint8')
+    # print(imageLeft.shape, imageRight.shape, warpedImage.shape)
     warpedImage[:, -imageRight.shape[1]:, :] = imageRight
     warpedImage[:, 0:imageLeft.shape[1], :] = imageLeft
     return warpedImage
@@ -78,11 +91,11 @@ if __name__ == '__main__':
 		if stitchedImage is not None:
 			cv2.imwrite('{}/image_{:03d}.png'.format(dataFolder, counter+1), imageRight[:,:,::-1])
 			cv2.imwrite('{}/stitched_{:03d}.png'.format(dataFolder, counter+1), stitchedImage[:,:,::-1])
-			print('stitchedImage saved')
+			# print('stitchedImage saved')
 
 			imageLeft = stitchedImage
 			counter += 1
-			if counter is 5: break
+			# if counter is 5: break
 
 		time.sleep(0.25)
 		if 'Q' in keys:
