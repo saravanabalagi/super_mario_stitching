@@ -8,6 +8,7 @@ Image stitching in python and opencv:
 Stitching in 2D considered in Super Mario Brothers game. 
 
 Here's a stitched image:
+
 ![Stitched Image](images/cover.png)
 
 Next Steps:
