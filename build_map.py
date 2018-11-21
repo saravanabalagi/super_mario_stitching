@@ -50,7 +50,7 @@ if __name__ == '__main__':
             current_position += 1
         else: 
             movement_vector = 0
-        print('Position: {:3d} | Movement: {:3d} '.format(current_position, movement_vector))
+        # print('Position: {:3d} | Movement: {:3d} '.format(current_position, movement_vector))
 
         if imageLeft is None:
             imageLeft = get_screen()
@@ -59,7 +59,7 @@ if __name__ == '__main__':
             continue
 
         imageRight = get_screen()
-        stitchedImage, imageCorrespondence = affineStitch(imageLeft, imageRight)
+        stitchedImage, imageCorrespondence = affineStitch(imageLeft, imageRight, movement_vector)
 
         if stitchedImage is not None:
             # cv2.imwrite('{}/image_{:03d}.png'.format(dataFolder, counter+1), imageRight)

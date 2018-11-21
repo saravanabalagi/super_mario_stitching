@@ -7,9 +7,11 @@ Image stitching in python and opencv:
 
 Stitching in 2D considered in Super Mario Brothers game. 
 
-Here's a stitched image:
+Here are a couple of stitched images:
 
 ![Stitched Image](images/cover.png)
+
+![Stitched Image](images/cover2.png)
 
 Next Steps:
 * Build a predictive model for Mario's movement
