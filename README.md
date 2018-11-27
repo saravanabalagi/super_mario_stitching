@@ -16,6 +16,7 @@ Here are a couple of stitched images:
 Next Steps:
 * Use cross-correlation of intersection of previous frame and current frame to measure loss
 * Observe pixels over time and choose the pixel value that appears the most (This will get rid of Goombas and Koopas when building maps)
+* Keyframing and Bundle Adjustment?
 
 Future Work:
 * Build a predictive model for Mario's movement
